@@ -19,8 +19,10 @@ import com.google.gson.reflect.TypeToken;
 import com.stripe.android.ApiResultCallback;
 import com.stripe.android.PaymentIntentResult;
 import com.stripe.android.Stripe;
+import com.stripe.android.model.Address;
 import com.stripe.android.model.ConfirmPaymentIntentParams;
 import com.stripe.android.model.PaymentIntent;
+import com.stripe.android.model.PaymentMethod;
 import com.stripe.android.model.PaymentMethodCreateParams;
 import com.stripe.android.view.CardInputWidget;
 
@@ -99,11 +101,38 @@ public class CheckoutActivityJava extends AppCompatActivity {
         // Hook up the pay button to the card widget and stripe instance
         Button payButton = findViewById(R.id.payButton);
         payButton.setOnClickListener((View view) -> {
-            CardInputWidget cardInputWidget = findViewById(R.id.cardInputWidget);
-            PaymentMethodCreateParams params = cardInputWidget.getPaymentMethodCreateParams();
-            if (params != null) {
+//            CardInputWidget cardInputWidget = findViewById(R.id.cardInputWidget);
+            CardInputWidget cardInputWidget = new CardInputWidget(this);
+            cardInputWidget.setCardNumber("4242 4242 4242 4242");
+            cardInputWidget.setCvcCode("123");
+            cardInputWidget.setExpiryDate(5,22);
+//            PaymentMethodCreateParams params = cardInputWidget.getPaymentMethodCreateParams();
+
+            PaymentMethodCreateParams.Card card = cardInputWidget.getPaymentMethodCard();
+            String postalCode = Objects.requireNonNull(cardInputWidget.getCard()).getAddressZip();
+
+            Address address = new Address.Builder()
+                    .setPostalCode(postalCode)
+                    .setLine1("Street Name")
+                    .setCity("City")
+                    .setState("State")
+                    .setCountry("US")
+                    .build();
+
+            PaymentMethod.BillingDetails billingDetails =
+                    new PaymentMethod.BillingDetails.Builder()
+                            .setEmail("email@example.com")
+                            .setName("name stripe")
+                            .setAddress(address)
+                            .build();
+
+            assert card != null;
+            PaymentMethodCreateParams paymentMethodParams = PaymentMethodCreateParams
+                    .create(card, billingDetails);
+
+            if (paymentMethodParams != null) {
                 ConfirmPaymentIntentParams confirmParams = ConfirmPaymentIntentParams
-                        .createWithPaymentMethodCreateParams(params, paymentIntentClientSecret);
+                        .createWithPaymentMethodCreateParams(paymentMethodParams, paymentIntentClientSecret);
                 stripe.confirmPayment(this, confirmParams);
             }
         });
