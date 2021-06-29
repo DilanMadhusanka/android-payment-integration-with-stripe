@@ -101,18 +101,18 @@ public class CheckoutActivityJava extends AppCompatActivity {
         // Hook up the pay button to the card widget and stripe instance
         Button payButton = findViewById(R.id.payButton);
         payButton.setOnClickListener((View view) -> {
-//            CardInputWidget cardInputWidget = findViewById(R.id.cardInputWidget);
-            CardInputWidget cardInputWidget = new CardInputWidget(this);
-            cardInputWidget.setCardNumber("4242 4242 4242 4242");
-            cardInputWidget.setCvcCode("123");
-            cardInputWidget.setExpiryDate(5,22);
-//            PaymentMethodCreateParams params = cardInputWidget.getPaymentMethodCreateParams();
 
-            PaymentMethodCreateParams.Card card = cardInputWidget.getPaymentMethodCard();
-            String postalCode = Objects.requireNonNull(cardInputWidget.getCard()).getAddressZip();
+
+            PaymentMethodCreateParams.Card.Builder paymentBuilder = new PaymentMethodCreateParams.Card.Builder();
+            paymentBuilder.setNumber("4242 4242 4242 4242");
+            paymentBuilder.setExpiryMonth(03);
+            paymentBuilder.setExpiryYear(23);
+            paymentBuilder.setCvc("123");
+
+            PaymentMethodCreateParams.Card card = new PaymentMethodCreateParams.Card();
 
             Address address = new Address.Builder()
-                    .setPostalCode(postalCode)
+                    .setPostalCode("58887")
                     .setLine1("Street Name")
                     .setCity("City")
                     .setState("State")
@@ -128,7 +128,7 @@ public class CheckoutActivityJava extends AppCompatActivity {
 
             assert card != null;
             PaymentMethodCreateParams paymentMethodParams = PaymentMethodCreateParams
-                    .create(card, billingDetails);
+                    .create(paymentBuilder.build(), billingDetails);
 
             if (paymentMethodParams != null) {
                 ConfirmPaymentIntentParams confirmParams = ConfirmPaymentIntentParams
